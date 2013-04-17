@@ -82,6 +82,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="DeferredRenderer.h" />
+    <ClInclude Include="Defines.h" />
     <ClInclude Include="DXUT\Core\DXUT.h" />
     <ClInclude Include="DXUT\Core\DXUTDevice11.h" />
     <ClInclude Include="DXUT\Core\DXUTDevice9.h" />
@@ -92,8 +94,13 @@
     <ClInclude Include="DXUT\Optional\DXUTsettingsdlg.h" />
     <ClInclude Include="DXUT\Optional\SDKmesh.h" />
     <ClInclude Include="DXUT\Optional\SDKmisc.h" />
+    <ClInclude Include="RenderLoop.h" />
+    <ClInclude Include="RenderScheme.h" />
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DeferredRenderer.cpp" />
     <ClCompile Include="DXUT\Core\DXUT.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
@@ -108,6 +115,10 @@
     <ClCompile Include="DXUT\Optional\SDKmesh.cpp" />
     <ClCompile Include="DXUT\Optional\SDKmisc.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RenderLoop.cpp" />
+    <ClCompile Include="RenderScheme.cpp" />
+    <ClCompile Include="Scene.cpp" />
+    <ClCompile Include="Texture.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

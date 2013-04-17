@@ -7,13 +7,13 @@
 #include "SDKMesh.h"
 #include <sstream>
 
+#include "RenderLoop.h"
+
+RenderLoop*	gRenderLoop = NULL;
 
 CFirstPersonCamera gViewerCamera;
 
-CDXUTSDKMesh gMeshOpaque;
-CDXUTSDKMesh gMeshAlpha;
 D3DXMATRIXA16 gWorldMatrix;
-ID3D11ShaderResourceView* gSkyboxSRV = 0;
 
 // DXUT GUI stuff
 CDXUTDialogResourceManager gDialogResourceManager;
@@ -45,10 +45,6 @@ void CALLBACK OnD3D11DestroyDevice(void* userContext);
 void CALLBACK OnD3D11FrameRender(ID3D11Device* d3dDevice, ID3D11DeviceContext* d3dDeviceContext, double time,
 								 float elapsedTime, void* userContext);
 
-void LoadSkybox(LPCWSTR fileName);
-
-void InitApp(ID3D11Device* d3dDevice);
-void DestroyApp();
 void InitScene(ID3D11Device* d3dDevice);
 void DestroyScene();
 
@@ -109,30 +105,6 @@ void UpdateUIState()
 }
 
 
-void InitApp(ID3D11Device* d3dDevice)
-{
-	DestroyApp();
-
-	// Zero out the elapsed time for the next frame
-	gZeroNextFrameTime = true;
-}
-
-
-void DestroyApp()
-{
-}
-
-void LoadSkybox(ID3D11Device* d3dDevice, LPCWSTR fileName)
-{
-	ID3D11Resource* resource = 0;
-	HRESULT hr;
-	hr = D3DX11CreateTextureFromFile(d3dDevice, fileName, 0, 0, &resource, 0);
-	assert(SUCCEEDED(hr));
-
-	d3dDevice->CreateShaderResourceView(resource, 0, &gSkyboxSRV);
-	resource->Release();
-}
-
 void InitScene(ID3D11Device* d3dDevice)
 {
 	DestroyScene();
@@ -161,14 +133,14 @@ void InitScene(ID3D11Device* d3dDevice)
 
 	// Zero out the elapsed time for the next frame
 	gZeroNextFrameTime = true;
-}
 
+	gRenderLoop = new RenderLoop(d3dDevice);
+}
 
 void DestroyScene()
 {
-	gMeshOpaque.Destroy();
-	gMeshAlpha.Destroy();
-	SAFE_RELEASE(gSkyboxSRV);
+	delete gRenderLoop;
+	gRenderLoop = NULL;
 }
 
 
@@ -249,7 +221,6 @@ void CALLBACK OnGUIEvent(UINT eventID, INT controlID, CDXUTControl* control, voi
 
 void CALLBACK OnD3D11DestroyDevice(void* userContext)
 {
-	DestroyApp();
 	DestroyScene();
 
 	gDialogResourceManager.OnD3D11DestroyDevice();
@@ -270,6 +241,8 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* d3dDevice, const DXGI_SURFACE
 	gViewerCamera.SetRotateButtons(true, false, false);
 	gViewerCamera.SetDrag(true);
 	gViewerCamera.SetEnableYAxisMovement(true);
+
+	InitScene(d3dDevice);
 
 	return S_OK;
 }
@@ -311,12 +284,10 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* d3dDevice, ID3D11DeviceContext* d
 		return;
 	}
 
-	// Lazily load scene
-	if (!gMeshOpaque.IsLoaded() && !gMeshAlpha.IsLoaded()) {
-		InitScene(d3dDevice);
-	}
-
 	ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
+	
+	// do render
+	gRenderLoop->render();
 
 	D3D11_VIEWPORT viewport;
 	viewport.Width    = static_cast<float>(DXUTGetDXGIBackBufferSurfaceDesc()->Width);

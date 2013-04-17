@@ -73,6 +73,20 @@
 #include <limits.h>
 #include <stdio.h>
 
+#include <vector>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <utility>
+#include <map>
+#include <algorithm>
+#include <memory>
+#include <limits>
+#include <random>
+
+using namespace std;
+using std::tr1::shared_ptr;
+
 // CRT's memory leak detection
 #if defined(DEBUG) || defined(_DEBUG)
 #include <crtdbg.h>
