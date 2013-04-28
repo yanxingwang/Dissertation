@@ -135,12 +135,13 @@ void InitScene(ID3D11Device* d3dDevice)
 	gZeroNextFrameTime = true;
 
 	gRenderLoop = new RenderLoop(d3dDevice);
+	gRenderLoop->setCamera(&gViewerCamera);
+	gRenderLoop->OnD3D11ResizedSwapChain(d3dDevice, DXUTGetDXGIBackBufferSurfaceDesc());
 }
 
 void DestroyScene()
 {
-	delete gRenderLoop;
-	gRenderLoop = NULL;
+	SAFE_DELETE(gRenderLoop);
 }
 
 
@@ -242,7 +243,7 @@ HRESULT CALLBACK OnD3D11CreateDevice(ID3D11Device* d3dDevice, const DXGI_SURFACE
 	gViewerCamera.SetDrag(true);
 	gViewerCamera.SetEnableYAxisMovement(true);
 
-	InitScene(d3dDevice);
+	//InitScene(d3dDevice);
 
 	return S_OK;
 }
@@ -261,6 +262,11 @@ HRESULT CALLBACK OnD3D11ResizedSwapChain(ID3D11Device* d3dDevice, IDXGISwapChain
 	// NOTE: Complementary Z (1-z) buffer used here, so swap near/far!
 	gViewerCamera.SetProjParams(D3DX_PI / 4.0f, gAspectRatio, 300.0f, 0.05f);
 
+	if (gRenderLoop) 
+	{
+		gRenderLoop->OnD3D11ResizedSwapChain(d3dDevice, backBufferSurfaceDesc);
+	}
+
 	return S_OK;
 }
 
@@ -274,20 +280,22 @@ void CALLBACK OnD3D11ReleasingSwapChain(void* userContext)
 void CALLBACK OnD3D11FrameRender(ID3D11Device* d3dDevice, ID3D11DeviceContext* d3dDeviceContext, double time,
 								 float elapsedTime, void* userContext)
 {
-	if (gZeroNextFrameTime) {
+	if (!gRenderLoop)
+	{
+		InitScene(d3dDevice);
+	}
+
+	if (gZeroNextFrameTime)
+	{
 		elapsedTime = 0.0f;
 	}
 	gZeroNextFrameTime = false;
 
-	if (gD3DSettingsDlg.IsActive()) {
+	if (gD3DSettingsDlg.IsActive())
+	{
 		gD3DSettingsDlg.OnRender(elapsedTime);
 		return;
 	}
-
-	ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
-	
-	// do render
-	gRenderLoop->render();
 
 	D3D11_VIEWPORT viewport;
 	viewport.Width    = static_cast<float>(DXUTGetDXGIBackBufferSurfaceDesc()->Width);
@@ -296,6 +304,11 @@ void CALLBACK OnD3D11FrameRender(ID3D11Device* d3dDevice, ID3D11DeviceContext* d
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
+
+	ID3D11RenderTargetView* pRTV = DXUTGetD3D11RenderTargetView();
+	
+	// do render
+	gRenderLoop->render(d3dDeviceContext, pRTV, &viewport);
 
 	if (gDisplayUI) {
 	}

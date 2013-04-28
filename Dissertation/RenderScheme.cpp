@@ -2,7 +2,8 @@
 #include "RenderScheme.h"
 
 
-RenderScheme::RenderScheme(void)
+RenderScheme::RenderScheme(RenderLoop* renderloop)
+	:mRenderLoop(NULL)
 {
 }
 
